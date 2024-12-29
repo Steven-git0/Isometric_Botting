@@ -3,10 +3,20 @@
 import pyautogui 
 import time
 import tkinter as tk
+import pygetwindow as gw
 
 def update_mouse_position():
+    window_title = 'RuneLite - litlGenocide'
+    window = gw.getWindowsWithTitle(window_title)[0]
+
+    if not window:
+        print(f"No window found with title '{window_title}'")
+        exit()
+
+    rx, ry, width, height = window.left, window.top, window.width, window.height
     x, y = pyautogui.position()
-    position_label.config(text=f"Mouse X: {x}, Mouse Y: {y}")
+    
+    position_label.config(text=f"Mouse X: {x-rx}, Mouse Y: {y-ry}")
 
     color = pyautogui.pixel(x,y)
     color_label.config(text = f"Color: {color}")

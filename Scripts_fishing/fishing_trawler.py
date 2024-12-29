@@ -1,5 +1,5 @@
-from Core_scripts.screen_scraping import *
-from Core_scripts.movements import *
+from screen_scraping import *
+from movements import *
 from PIL import Image
 import time
 import random

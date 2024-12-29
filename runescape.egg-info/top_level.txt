@@ -1,0 +1,5 @@
+Scripts_agi
+Scripts_combat
+Scripts_fishing
+core_scripts
+osrs_images

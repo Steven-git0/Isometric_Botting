@@ -5,6 +5,9 @@ import numpy as np
 import time
 import cv2
 from PIL import Image, ImageEnhance, ImageFilter
+import pygetwindow as gw
+
+window_title = 'RuneLite - litlGenocide'
 
 class screenscrape:
     #Read text for a defined region
@@ -125,9 +128,9 @@ class screenscrape:
         # Capture a region of the screen and save it as an image file
         x, y = pyautogui.position()
         screenshot = pyautogui.screenshot(region=(x, y+20, 140, 25))
-        screenshot.save("C:/Users/Steven/OneDrive/Documents/Runescape/rawshot.png")
+        screenshot.save("C:/Users/Steven/Runescape/osrs_images/rawshot.png")
         screenshot = screenshot.resize((400, 100), Image.LANCZOS)
-        screenshot.save("C:/Users/Steven/OneDrive/Documents/Runescape/screenshot.png")
+        screenshot.save("C:/Users/Steven/Runescape/osrs_images/screenshot.png")
 
         # Enhance contrast
         enhancer = ImageEnhance.Contrast(screenshot)
@@ -155,10 +158,17 @@ class screenscrape:
         # Check if the target text is found in the OCR result
     
 
+    def find_contours(target_color, color_t1 = 5, color_t2 = 5, color_t3 = 5, area_tolerance = 20):
 
-    def find_contours(target_color, color_t1 = 2, color_t2 = 2, color_t3 = 2, area_tolerance = 20):
-        screenshot = pyautogui.screenshot(region=(1, 1, 1450, 1050))  # Take a screenshot
-        screenshot.save("C:/Users/Steven/OneDrive/Documents/Runescape/screenshot.png")
+        window = gw.getWindowsWithTitle(window_title)[0]
+        if not window:
+            print(f"No window found with title '{window_title}'")
+            exit()
+        x, y, width, height = window.left, window.top, window.width, window.height
+
+        #in osrs client this is the location to get the screen shot.
+        screenshot = pyautogui.screenshot(region=(x, y, width, height))
+        screenshot.save("C:/Users/Steven/Runescape/osrs_images/screenshot.png")
         # Convert the screenshot to a NumPy array, then convert to hsv for better contour detection
         image = np.array(screenshot) 
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)

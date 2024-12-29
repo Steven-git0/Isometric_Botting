@@ -1,5 +1,5 @@
-from Core_scripts.screen_scraping import *
-from Core_scripts.movements import *
+from screen_scraping import *
+from movements import *
 import time
 
 mouse_movements = mouse_movements()

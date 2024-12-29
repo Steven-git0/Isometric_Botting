@@ -3,10 +3,9 @@ import pyautogui
 import time
 import numpy as np
 import random
-from Core_scripts.screen_scraping import *
+from core_scripts.screen_scraping import *
 from humancursor import SystemCursor
 import pygetwindow as gw
-import Core_scripts.screen_scraping as screen_scraping
 cursor = SystemCursor()
 
 #Time to mine, adjust depending on your pickaxe and mining level (lower if better pick axe)
@@ -16,29 +15,34 @@ class mouse_movements():
         if m == 'r':
             print('clicking')
             pyautogui.mouseDown(pyautogui.position(), button='right')
-            time.sleep(random.uniform(.08, .10))
+            time.sleep(random.uniform(.10, .15))
             pyautogui.mouseUp(pyautogui.position(), button='right')
         else:
             print('clicking')
             pyautogui.mouseDown(pyautogui.position())
-            time.sleep(random.uniform(.08, .10))
+            time.sleep(random.uniform(.10, .15))
             pyautogui.mouseUp(pyautogui.position())
             
 
-    def move_mouse(self, end_x, end_y, variance):
+    def move_mouse(self, end_x, end_y, variance = 2):
         
         end_x += random.uniform(-variance, variance) 
         end_y += random.uniform(-variance, variance)
         attempts = 0
-        while attempts < 5:
+        while attempts < 10:
             try:
                 print('move to ', end_x, end_y)
-                cursor.move_to([end_x, end_y], duration = random.uniform(.04, .06))
+                cursor.move_to([end_x, end_y], duration = 0.01)
                 break
             except Exception as e:
                 print(f"An error occurred: {e}")
                 attempts += 1
-        if attempts == 5:
+            if attempts == 5:
+                print("5 attempts failed, rounding to whole")
+                end_x = round(end_x)
+                end_y = round(end_y)
+
+        if attempts == 10:
              print("Max retries reached, operation failed.")
 
         #cursor.click_on([end_x, end_y])
