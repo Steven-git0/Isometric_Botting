@@ -57,11 +57,11 @@ class mouse_movements():
         except:
             return False
     
-    def move_contours(self, x_axis = True, right2left = False, color = [5,195,195]):
+    def move_contours(self, x_axis = True, right2left = False, color = [50,0,73]):
         #color of teal markers in runelite is [0,253,242]
         #right to left is descending order as coords is 0, 0 at the top left
         #find the teal contours
-        teal_markers = screenscrape.find_contours(color, color_t1 = 5, color_t2 = 60, color_t3 = 60)
+        teal_markers = screenscrape.find_contours(color)
         #filter out the minimap contours
         x_low, x_high, y_low, y_high = self.get_minimap()
         filtered_markers = [(x,y) for x,y in teal_markers if not (x_low <= x <= x_high and y_low <= y <= y_high)]
@@ -75,23 +75,24 @@ class mouse_movements():
             print(x, y)
         return filtered_markers
     
-    def relative_move(self, direction = None, x_offset = 0, y_offset = 0):
-        center = self.get_center()
-        center_x, center_y = center
+    def relative_move(self, direction = None, offset = 60):
+        center_x, center_y = self.get_center()
         filtered_markers = self.move_contours()
         coordinates = filtered_markers
-        center_x += x_offset
-        center_y += y_offset
         #filter out a direction you dont want the player to go
         if direction == 'up':
-            #remember top left is 0, 0 higher y is the lower it is.
-            filtered_markers = [(x,y) for x, y in coordinates if y <= center_y]
+            #remember top left is 0, 0 higher y is the lower it is. -80 to shift the cenmtre point as to not include center 
+            filtered_markers = [(x,y) for x, y in coordinates if y <= center_y-offset]
+            print("moving up")
         elif direction == 'down':
-            filtered_markers = [(x,y) for x, y in coordinates if y >= center_y]
+            filtered_markers = [(x,y) for x, y in coordinates if y >= center_y+offset]
+            print("moving down")
         elif direction == 'right':
-            filtered_markers = [(x,y) for x, y in coordinates if x >= center_x]
+            filtered_markers = [(x,y) for x, y in coordinates if x >= center_x+offset]
+            print("moving right")
         elif direction == 'left':
-            filtered_markers = [(x,y) for x, y in coordinates if x <= center_x]
+            filtered_markers = [(x,y) for x, y in coordinates if x <= center_x-offset]
+            print("moving left")
         else:
             print('no direction specified, moving to closest marker')
 
@@ -104,29 +105,23 @@ class mouse_movements():
 
         #get the index of the lowest value in the sum list
         min_index = sum_list.index(min(sum_list))
+        print(min_index)
 
         return filtered_markers[min_index]
     
     def get_center(self, window_title = 'RuneLite - litlGenocide'):
         
-        # Get the window object
-        windows = gw.getWindowsWithTitle(window_title)
-        if not windows:
+
+        window = gw.getWindowsWithTitle(window_title)[0]
+        if not window:
             print(f"No window found with title '{window_title}'")
             exit()
-
-        window = windows[0]  # Select the first matching window
-
-        # Get window dimensions
-        window_left = window.left
-        window_top = window.top
-        window_width = window.width
-        window_height = window.height
+        rx, ry, width, height = window.left, window.top, window.width, window.height
 
         # Calculate the center of the window
         #-17 is specific the the runelite client to compensate for the bar on the right.
-        center_x = (window_left + window_width // 2) - 17
-        center_y = window_top + window_height // 2
+        center_x = (width // 2) - 17
+        center_y = (height // 2) + 20
 
         print(f"center at ({center_x}, {center_y})")
 

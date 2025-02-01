@@ -25,12 +25,21 @@ time.sleep(random.uniform(2.50, 2.50))
 #         time.sleep(random.uniform(300, 400))
 
 
-def move_out():
-    
+def bank_items():
+    x,y = mouse_movements.relative_move('up')
+    mouse_movements.move_mouse(rx+x, ry+y, 2)
+    mouse_movements.perform_click()
+    time.sleep(random.uniform(7.50, 7.70))
+    print('done')
+    x,y = mouse_movements.relative_move('up')
+    mouse_movements.move_mouse(rx+x, ry+y, 2)
+    mouse_movements.perform_click()
+    time.sleep(random.uniform(6.00, 6.20))
+    print('done')
     x,y = mouse_movements.relative_move('left')
     mouse_movements.move_mouse(rx+x, ry+y, 2)
     mouse_movements.perform_click()
-    time.sleep(random.uniform(7.60, 7.80))
+    time.sleep(random.uniform(8.60, 8.80))
     print('done')
     x,y = mouse_movements.relative_move('left')
     mouse_movements.move_mouse(rx+x, ry+y, 2)
@@ -40,14 +49,19 @@ def move_out():
     x,y = mouse_movements.relative_move('left')
     mouse_movements.move_mouse(rx+x, ry+y, 2)
     mouse_movements.perform_click()
-    time.sleep(random.uniform(7.70, 7.90))
+    time.sleep(random.uniform(8.70, 8.90))
     print('done')
 
+    #click deposit items
+    mouse_movements.move_mouse(rx+560, ry+610, 2)
+    mouse_movements.perform_click()
+    time.sleep(random.uniform(2.0, 2.0))
+    print('done')
 
     x,y = mouse_movements.relative_move('right')
     mouse_movements.move_mouse(rx+x, ry+y, 2)
     mouse_movements.perform_click()
-    time.sleep(random.uniform(7.70, 7.90))
+    time.sleep(random.uniform(8.70, 8.90))
     print('done')
     x,y = mouse_movements.relative_move('right')
     mouse_movements.move_mouse(rx+x, ry+y, 2)
@@ -58,37 +72,40 @@ def move_out():
     x,y = mouse_movements.relative_move('right')
     mouse_movements.move_mouse(rx+x, ry+y, 2)
     mouse_movements.perform_click()
-    time.sleep(random.uniform(7.60, 7.80))
+    time.sleep(random.uniform(8.60, 8.80))
+    print('done')
+    x,y = mouse_movements.relative_move('down')
+    mouse_movements.move_mouse(rx+x, ry+y, 2)
+    mouse_movements.perform_click()
+    time.sleep(random.uniform(6.00, 6.20))
     print('done')
 
-def cooking():
-    mouse_movements.move_mouse(rx+795, ry+387, 2)
+    x,y = mouse_movements.relative_move('down')
+    mouse_movements.move_mouse(rx+x, ry+y, 2)
     mouse_movements.perform_click()
-    time.sleep(random.uniform(4.60, 4.80))
+    time.sleep(random.uniform(8.00, 8.35))
     print('done')
 
-    pyautogui.press('1')
-    time.sleep(random.uniform(40.00, 40.80))
-
-    mouse_movements.move_mouse(rx+652, ry+788, 2)
-    mouse_movements.perform_click()
-    time.sleep(random.uniform(4.60, 4.80))
-
-    mouse_movements.move_mouse(rx+809, ry+860, 2)
-    mouse_movements.perform_click()
-    time.sleep(random.uniform(1.60, 1.80))
-
-    mouse_movements.move_mouse(rx+809, ry+860, 2)
-    mouse_movements.perform_click()
-    time.sleep(random.uniform(1.60, 1.80))
-
-    mouse_movements.move_mouse(rx+796, ry+63, 2)
-    mouse_movements.perform_click()
-    time.sleep(random.uniform(1.60, 1.80))
 
 while True:
-   time.sleep(600)
-   print("aggrotimer reached")
-   time.sleep(100)
-   move_out()
-    
+
+    mouse_movements.move_mouse(rx+730, ry+502, 2)
+    mouse_movements.perform_click()
+    time.sleep(random.uniform(40.00, 45.00))
+
+    for x in range(50): #while screenscrape.read_text("inventory is too full") == False:
+        print ( x, ' iteration')
+        mouse_movements.move_mouse(rx+695, ry+502, 2)
+        mouse_movements.perform_click()
+        time.sleep(random.uniform(40.00, 45.00))
+        if screenscrape.read_text("inventory is too full"):
+            break
+
+        mouse_movements.move_mouse(rx+765, ry+502, 2)
+        mouse_movements.perform_click()
+        time.sleep(random.uniform(40.00, 45.00))
+        if screenscrape.read_text("inventory is too full"):
+            break
+
+
+    bank_items()

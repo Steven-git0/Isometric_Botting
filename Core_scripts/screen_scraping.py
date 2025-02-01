@@ -12,30 +12,28 @@ window_title = 'RuneLite - litlGenocide'
 class screenscrape:
     #Read text for a defined region
     def read_text(target_text):
+        window = gw.getWindowsWithTitle(window_title)[0]
+        if not window:
+            print(f"No window found with title '{window_title}'")
+            exit()
+        x, y, width, height = window.left, window.top, window.width, window.height
+
         # Capture a region of the screen and save it as an image file
-        screenshot = pyautogui.screenshot(region=(1, 860, 525, 170))
+        screenshot = pyautogui.screenshot(region=(x, y+860, 525, 170))
         screenshot = screenshot.resize((6000, 2000), Image.LANCZOS)
-        screenshot.save("screenshot.png")
 
         # Enhance contrast
         enhancer = ImageEnhance.Contrast(screenshot)
-        screenshot = enhancer.enhance(2.0)
-        #use cv2 to convert into black and white to make blue letters readable
-        image = cv2.imread('screenshot.png')
+        screenshot = np.array(enhancer.enhance(2.0))
         # Convert the image to grayscale
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray_image = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
 
         # Enhance contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
         enhanced_image = clahe.apply(gray_image)
-        #save image as new file
-        cv2.imwrite('processed_image.png', enhanced_image)
-
-        # Load the saved screenshot image
-        image = Image.open("processed_image.png")
-
+        
         # Use Tesseract to perform OCR
-        text = pytesseract.image_to_string(image)
+        text = pytesseract.image_to_string(enhanced_image)
 
         # Check if the target text is found in the OCR result
         if target_text in text:
@@ -128,34 +126,28 @@ class screenscrape:
         # Capture a region of the screen and save it as an image file
         x, y = pyautogui.position()
         screenshot = pyautogui.screenshot(region=(x, y+20, 140, 25))
-        screenshot.save("C:/Users/Steven/Runescape/osrs_images/rawshot.png")
         screenshot = screenshot.resize((400, 100), Image.LANCZOS)
-        screenshot.save("C:/Users/Steven/Runescape/osrs_images/screenshot.png")
 
         # Enhance contrast
         enhancer = ImageEnhance.Contrast(screenshot)
-        screenshot = enhancer.enhance(2.0)
+        screenshot = np.array(enhancer.enhance(2.0))
         #use cv2 to convert into black and white to make blue letters readable
-        image = cv2.imread('screenshot.png')
-        # Convert the image to grayscale
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray_image = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
 
         # Enhance contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
         enhanced_image = clahe.apply(gray_image)
-        #save image as new file
-        cv2.imwrite('processed_image.png', enhanced_image)
 
-        # Load the saved screenshot image
-        image = Image.open("processed_image.png")
+        cv2.imshow("Demo Image", enhanced_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
         # Use Tesseract to perform OCR
-        text = pytesseract.image_to_string(image)
+        text = pytesseract.image_to_string(enhanced_image, lang='eng')
         print(text)
         
         return text
 
-        # Check if the target text is found in the OCR result
     
 
     def find_contours(target_color, color_t1 = 5, color_t2 = 5, color_t3 = 5, area_tolerance = 20):
@@ -168,7 +160,6 @@ class screenscrape:
 
         #in osrs client this is the location to get the screen shot.
         screenshot = pyautogui.screenshot(region=(x, y, width, height))
-        screenshot.save("C:/Users/Steven/Runescape/osrs_images/screenshot.png")
         # Convert the screenshot to a NumPy array, then convert to hsv for better contour detection
         image = np.array(screenshot) 
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)

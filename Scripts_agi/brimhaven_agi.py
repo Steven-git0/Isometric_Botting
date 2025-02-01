@@ -7,7 +7,6 @@ import numpy as np
 import math
 import mss
 from ultralytics import YOLO
-from pyHM import mouse
 import time
 
 mouse_movements = mouse_movements()
