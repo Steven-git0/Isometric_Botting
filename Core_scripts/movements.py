@@ -11,6 +11,15 @@ cursor = SystemCursor()
 #Time to mine, adjust depending on your pickaxe and mining level (lower if better pick axe)
 
 class mouse_movements():
+
+    def __init__(self, window_title): 
+        self.screenscrape = screenscrape(window_title)
+        window = gw.getWindowsWithTitle(window_title)[0]
+        if not window:
+            print(f"No window found with title '{window_title}'")
+            exit()
+        self.rx, self.ry, self.width, self.height = window.left, window.top, window.width, window.height
+
     def perform_click(self, m = 'l'):
         if m == 'r':
             print('clicking')
@@ -26,23 +35,25 @@ class mouse_movements():
 
     def move_mouse(self, end_x, end_y, variance = 2):
         
-        end_x += random.uniform(-variance, variance) 
-        end_y += random.uniform(-variance, variance)
+        if end_x <= 1 and end_y <= 1:
+            end_x = self.rx + (self.width*end_x) + random.uniform(-variance, variance)
+            end_y = self.ry + (self.height*end_y) + random.uniform(-variance, variance)
+        else:
+            end_x += random.uniform(-variance, variance) 
+            end_y += random.uniform(-variance, variance)
         attempts = 0
-        while attempts < 10:
+        while attempts < 5:
             try:
                 print('move to ', end_x, end_y)
                 cursor.move_to([end_x, end_y], duration = 0.01)
                 break
             except Exception as e:
                 print(f"An error occurred: {e}")
-                attempts += 1
-            if attempts == 5:
-                print("5 attempts failed, rounding to whole")
+                print("1 attempt failed, rounding to whole")
                 end_x = round(end_x)
                 end_y = round(end_y)
 
-        if attempts == 10:
+        if attempts == 5:
              print("Max retries reached, operation failed.")
 
         #cursor.click_on([end_x, end_y])
@@ -51,7 +62,7 @@ class mouse_movements():
         image = Image.open(img_name)
         width, height = image.size[0] // 2, image.size[1] // 2
         try:
-            x,y = screenscrape.img_detection(img_name, threshold)[element]
+            x,y = self.screenscrape.img_detection(img_name, threshold)[element]
             mouse_movements.move_mouse(x+width, y+height, 2)
             mouse_movements.perform_click()
         except:
@@ -61,10 +72,10 @@ class mouse_movements():
         #color of teal markers in runelite is [0,253,242]
         #right to left is descending order as coords is 0, 0 at the top left
         #find the teal contours
-        teal_markers = screenscrape.find_contours(color)
+        markers = self.screenscrape.find_contours(color)
         #filter out the minimap contours
         x_low, x_high, y_low, y_high = self.get_minimap()
-        filtered_markers = [(x,y) for x,y in teal_markers if not (x_low <= x <= x_high and y_low <= y <= y_high)]
+        filtered_markers = [(x,y) for x,y in markers if not (x_low <= x <= x_high and y_low <= y <= y_high)]
         #Sort by x coordinates, else y coordinates
         if x_axis == True:
             filtered_markers = sorted(filtered_markers, key= lambda x: x[0], reverse = right2left)
@@ -76,6 +87,7 @@ class mouse_movements():
         return filtered_markers
     
     def relative_move(self, direction = None, offset = 60):
+
         center_x, center_y = self.get_center()
         filtered_markers = self.move_contours()
         coordinates = filtered_markers
@@ -108,40 +120,29 @@ class mouse_movements():
         print(min_index)
 
         return filtered_markers[min_index]
-    
-    def get_center(self, window_title = 'RuneLite - litlGenocide'):
-        
 
-        window = gw.getWindowsWithTitle(window_title)[0]
-        if not window:
-            print(f"No window found with title '{window_title}'")
-            exit()
-        rx, ry, width, height = window.left, window.top, window.width, window.height
-
+    def get_center(self):
         # Calculate the center of the window
         #-17 is specific the the runelite client to compensate for the bar on the right.
-        center_x = (width // 2) - 17
-        center_y = (height // 2) + 20
+        center_x = (self.width // 2) - 17
+        center_y = (self.height // 2) + 20
 
         print(f"center at ({center_x}, {center_y})")
 
         return center_x, center_y
     
-    def get_minimap(self, window_title = 'RuneLite - litlGenocide'):
+    def get_minimap(self):
 
-        # Get the window object
-        windows = gw.getWindowsWithTitle(window_title)
-        if not windows:
-            print(f"No window found with title '{window_title}'")
-            exit()
+        window_top = self.ry
+        window_width = self.width
 
-        window = windows[0]  # Select the first matching window
+        #osrs minimap size does not change and is always x-260 and y+ 230 fromt he top right corner
+        return window_width - 260, window_width, window_top, window_top + 230
+    
+    def login(self):
 
-        # Get window dimensions
-        window_left = window.left
-        window_top = window.top
-        window_width = window.width
-        window_height = window.height
+        window_top = self.ry
+        window_width = self.width
 
         #osrs minimap size does not change and is always x-260 and y+ 230 fromt he top right corner
         return window_width - 260, window_width, window_top, window_top + 230
