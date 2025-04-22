@@ -15,9 +15,11 @@ mouse_movements = mouse_movements(window_title)
 screenscrape = screenscrape(window_title)
 
 
+food_item = screenscrape.last_inventory()
+print(screenscrape.img_detection(food_item, threshold= .70))
+# screenshot = pyautogui.screenshot(region=(rx+1495-97, ry+1119-93, 30, 30))
+# screenshot.show()
 
-screenshot = pyautogui.screenshot(region=(rx+10, ry+20, 150, 100))
-screenshot.show()
 # if screenscrape.mouse_text() == 'calcified':
 #     mouse_movements.perform_click()
 #     time.sleep(random.uniform(50.00, 60.40))

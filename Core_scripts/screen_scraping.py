@@ -8,6 +8,7 @@ import cv2
 from PIL import Image, ImageEnhance, ImageFilter
 import pygetwindow as gw
 from sklearn.cluster import DBSCAN
+import re
 
 
 class screenscrape:
@@ -48,22 +49,42 @@ class screenscrape:
             print(f"Not target text: {text}")
             return False
     
-    def check_health(self, threshold = 9):
-        #x = 1220+30 y = 75+30
-        missing_health = np.array([19,19,19])
-        health_screenshot = pyautogui.screenshot(region=(1218, 75, 30, 30))
-        image = np.array(health_screenshot)
+    def check_health(self, target_color = np.array([230, 180, 0]), color_t1 = 25, color_t2 = 25, color_t3 = 5):
 
-        for y in range(image.shape[0]):
-            row = image[y,:,:]
-            if np.any(np.all(row == missing_health, axis=1)):  # Check if the target color exists in this row
-                print(f"Color found in row {y}")
-                if y >= threshold:
-                    return True
+        screenshot = pyautogui.screenshot(region=(self.rx + self.width - 250, self.ry + 80, 30, 30))
+        image = np.array(screenshot) 
+        #set the upper and lower bounds for the color, sometimes the color may be a few units off within the contour
+        lower_bound = np.array([target_color[0] - color_t1, target_color[1] - color_t2, target_color[2] - color_t3])
+        upper_bound = np.array([target_color[0] + color_t1, target_color[1] + color_t2, target_color[2] + color_t3])
+
+        # Create a 'mask', matched color are black the rest in white, for a B&W image of only where the outlines are.
+        mask = cv2.inRange(image, lower_bound, upper_bound) 
+
+        if cv2.countNonZero(mask) > 0:
+            print('low health')
+            return True
+        else:
+            print('High health')
+            return False
+                
+    #color_check only checks if the color is above each index value
+    def color_check(self, x, y, desired_color):
+
+        if x < 1 and y < 1:
+            x = self.rx + (self.width*x)
+            y = self.ry + (self.height*y)
+
+        actual_color = pyautogui.pixel(int(x),int(y))
+
+        for i, color in enumerate(desired_color):
+            print(actual_color, desired_color)
+            if actual_color[i] < desired_color[i]:
+                return False
+        
+        return True
         
     def skill_text(self, activity =''):
-        #green_color = np.array([0, 255, 0])
-        red_color = np.array([255, 0, 0])
+        green_color = np.array([0, 255, 0])
         screenshot = None
         #Wintertodt bottom left text box
         if activity == 'wintertodt_sw':
@@ -74,21 +95,21 @@ class screenscrape:
         elif activity == 'wintertodt_bar':
             red_color = np.array([204, 0, 0])
             screenshot = pyautogui.screenshot(region=(5, 50, 15, 15))
+        elif activity == 'motherload':
+            screenshot = pyautogui.screenshot(region=(self.rx+10, self.ry+60, 150, 100))
         #All other skill activities textbox
         else:
             screenshot = pyautogui.screenshot(region=(self.rx+10, self.ry+20, 150, 100))
     
-        screenshot.save("C:/Users/Steven/OneDrive/Documents/Runescape/screenshot_skilltext.png")
-    
         image = np.array(screenshot) 
-        mask = cv2.inRange(image, red_color, red_color)
+        mask = cv2.inRange(image, green_color, green_color)
 
         if cv2.countNonZero(mask) > 0:
-            print('Idle')
-            return False
-        else:
             print('Action')
             return True
+        else:
+            print('Idle')
+            return False
         
     def mouse_text(self, target_text):
         # Capture a region of the screen and save it as an image file
@@ -123,7 +144,6 @@ class screenscrape:
         screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
         # Convert the screenshot to a NumPy array, then convert to hsv for better contour detection
         image = np.array(screenshot) 
-        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         #set the upper and lower bounds for the color, sometimes the color may be a few units off within the contour
         lower_bound = np.array([target_color[0] - color_t1, target_color[1] - color_t2, target_color[2] - color_t3])
         upper_bound = np.array([target_color[0] + color_t1, target_color[1] + color_t2, target_color[2] + color_t3])
@@ -146,13 +166,17 @@ class screenscrape:
                 cx = int(c[:, 0, 0].mean())
                 cy = int(c[:, 0, 1].mean())
                 print("Found color at coordinates:", cx, cy)
-
-                squares.append((cx,cy))
+            
+                squares.append((self.rx+cx,self.ry+cy))
+            
+             #filter out the minimap contours
+            filtered_contours = [(x,y) for x,y in squares if not (self.rx+self.width-215 <= x <= self.rx+self.width 
+                                                             and self.ry+0 <= y <= self.ry+200)]
 
         else:
             print("Color not found on the screen.")
 
-        return squares
+        return filtered_contours
 
     def group_nearby_coordinates(self, coordinates, eps=4):
         if not coordinates:
@@ -175,46 +199,79 @@ class screenscrape:
         averaged_coordinates = [tuple(np.mean(points, axis=0).astype(int)) for points in clusters.values()]
         
         return averaged_coordinates
+    
+    def last_inventory(self):
+        screenshot = pyautogui.screenshot(region=(self.rx+self.width-97, self.ry+self.height-82, 30, 20))
+        return screenshot
 
-    def img_detection(self, input_img, threshold = .70, area = None):
+    def img_detection(self, input_img, threshold = .70, alpha=0.5, area = None):
 
-        #add values to tuples to get the center coordinates 
-        image = Image.open(input_img)
-        width_adj, height_adj = image.size[0] // 2, image.size[1] // 2
-        if area == 'experience':
-            screenshot = pyautogui.screenshot(region=(self.rx + self.width-380, self.ry+30, 120, 35))
-            screenshot.show()
+        if isinstance(input_img, str):
+            input_img = Image.open(input_img)
+
+        width_adj, height_adj = input_img.size[0] // 2, input_img.size[1] // 2
+        if area == 'inventory':
+            pass
         else:
             screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
             #screenshot.show()
-        screenshot_np = np.array(screenshot)
 
-        # Convert RGB screenshot to Grayscale
-        haystack_img = cv2.cvtColor(screenshot_np, cv2.COLOR_RGB2GRAY)
-        # Load the input image (file path)
-        needle_img = cv2.imread(input_img, cv2.IMREAD_GRAYSCALE)
-        try:
-            #testing display purposes
-            # print(needle_img.dtype, haystack_img.dtype)
-            result = cv2.matchTemplate(haystack_img, needle_img, cv2.TM_CCOEFF_NORMED)
-            #cv2.imshow('Results', result)
-            #cv2.waitKey()
-            #threshold % match accepted result
-            loc = np.where(result >= threshold)
-            # Zip the coordinates into a list of (x, y) tuples
-            coordinates = list(zip(*loc[::-1]))
-            #add the adjustments to get the centre location
-            coordinates = [(x+width_adj, y+height_adj) for x, y in coordinates]
-            #group to prevent duplicate images of the same location
-            grouped_coordinates = self.group_nearby_coordinates(coordinates, eps=4)
+        haystack_color = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        template_color = cv2.cvtColor(np.array(input_img.convert("RGB")), cv2.COLOR_RGB2BGR)
 
-            # Print the coordinates
-            # for coord in grouped_coordinates:
-            #     print("Match found at:", coord)
+        # 2. Prepare edge maps for shape
+        haystack_gray  = cv2.cvtColor(haystack_color, cv2.COLOR_BGR2GRAY)
+        template_gray  = cv2.cvtColor(template_color, cv2.COLOR_BGR2GRAY)
+        haystack_edges = cv2.Canny(haystack_gray, 50, 150)
+        template_edges = cv2.Canny(template_gray, 50, 150)
+        # (optional) thicken edges so small gaps don’t break the contour
+        kernel = np.ones((3,3), np.uint8)
+        haystack_edges = cv2.dilate(haystack_edges, kernel, iterations=1)
+        template_edges = cv2.dilate(template_edges, kernel, iterations=1)
 
-        except IndexError as e:
-            print('img not found')
-            return False
+        # 3. Run two template matches
+        res_color = cv2.matchTemplate(haystack_color, template_color, cv2.TM_CCOEFF_NORMED)
+        res_shape = cv2.matchTemplate(haystack_edges, template_edges, cv2.TM_CCOEFF_NORMED)
 
-        return grouped_coordinates
+        # 4. Blend them: alpha * color_score + (1 - alpha) * shape_score
+        result = cv2.addWeighted(res_color, alpha, res_shape, 1 - alpha, 0)
+
+        # 5. Threshold and extract centers
+        loc = np.where(result >= threshold)
+        coords = list(zip(*loc[::-1]))
+        width_adj, height_adj = template_color.shape[1] // 2, template_color.shape[0] // 2
+        coords = [(self.rx + x + width_adj, self.ry + y + height_adj) for x,y in coords]
+        grouped = self.group_nearby_coordinates(coords, eps=4)
+
+        return grouped or False
+
+        # # Convert RGB screenshot to Grayscale
+        # haystack_img = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
+        # # Convert input image to grayscale
+        # image = input_img.convert("RGB")
+        # needle_img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
+        # try:
+        #     #testing display purposes
+        #     # print(needle_img.dtype, haystack_img.dtype)
+        #     result = cv2.matchTemplate(haystack_img, needle_img, cv2.TM_CCOEFF_NORMED)
+        #     #cv2.imshow('Results', result)
+        #     #cv2.waitKey()
+        #     #threshold % match accepted result
+        #     loc = np.where(result >= threshold)
+        #     # Zip the coordinates into a list of (x, y) tuples
+        #     coordinates = list(zip(*loc[::-1]))
+        #     #add the adjustments to get the centre location
+        #     coordinates = [(self.rx+x+width_adj, self.ry+y+height_adj) for x, y in coordinates]
+        #     #group to prevent duplicate images of the same location
+        #     grouped_coordinates = self.group_nearby_coordinates(coordinates, eps=4)
+
+        #     # Print the coordinates
+        #     # for coord in grouped_coordinates:
+        #     #     print("Match found at:", coord)
+
+        # except IndexError as e:
+        #     print('img not found')
+        #     return False
+
+        # return grouped_coordinates
 

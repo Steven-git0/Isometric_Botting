@@ -19,7 +19,9 @@ def update_mouse_position():
     
     position_label.config(text=f"Mouse X: {(x-rx)}, Mouse Y: {(y-ry)}")
 
-    ratio_label.config(text=f"Ratio X: {round((x-rx)/width, 6)}, Ratio Y: {round((y-ry)/height, 6)}")
+    size_label.config(text=f"Window Length: {width}, Window Height: {height}")
+
+    ratio_label.config(text=f"Ratio X: {round((x-rx)/width, 5)}, Ratio Y: {round((y-ry)/height, 5)}")
 
     color = pyautogui.pixel(x,y)
     color_label.config(text = f"Color: {color}")
@@ -30,6 +32,9 @@ root.title("Mouse Position Tracker")
 
 position_label = tk.Label(root, text="", font=("Arial", 12))
 position_label.pack(padx=10, pady=10)
+
+size_label = tk.Label(root, text="", font=("Arial", 12))
+size_label.pack(padx=10, pady=10)
 
 ratio_label = tk.Label(root, text="", font=("Arial", 12))
 ratio_label.pack(padx=10, pady=10)

@@ -2,6 +2,18 @@ from core_scripts.screen_scraping import *
 from core_scripts.movements import *
 import pygetwindow as gw
 import time
+import tkinter as tk
+from tkinter import simpledialog
+
+# root = tk.Tk()
+# root.title("Motherload mine")
+# # Show the input popup
+# username = simpledialog.askstring("Userame", "Please enter your characters Username to find the Client:")
+
+# # Show an additional instructions popup
+# if username:
+#     tk.messagebox.showinfo("Instructions", f"Hello {username}!\n\nPlease follow the steps below:\n1. Step one...\n2. Step two...\n3. Step three...")
+
 
 window_title = "RuneLite - litlGenocide"
 
@@ -25,7 +37,7 @@ while True:
         if iteration < 3:
             mouse_movements.move_mouse(.51161, .47447, 4)
             mouse_movements.perform_click()
-            time.sleep(random.uniform(53, 7.50))
+            time.sleep(random.uniform(5.30, 7.50))
             iteration += 1
             mouse_movements.move_mouse(960, 540, 500)
         else:
@@ -34,7 +46,7 @@ while True:
             mouse_movements.perform_click()
             time.sleep(random.uniform(7, 7.50))
 
-        if random.uniform(0.00, 100.00) <= 1:
+        if random.uniform(0.00, 100.00) <= 1.5:
                 print('taking quick break')
                 time.sleep(random.uniform(60.00, 600.00))
         

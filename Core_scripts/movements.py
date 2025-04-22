@@ -24,12 +24,12 @@ class mouse_movements():
         if m == 'r':
             print('clicking')
             pyautogui.mouseDown(pyautogui.position(), button='right')
-            time.sleep(random.uniform(.10, .15))
+            time.sleep(random.uniform(.10, .20))
             pyautogui.mouseUp(pyautogui.position(), button='right')
         else:
             print('clicking')
             pyautogui.mouseDown(pyautogui.position())
-            time.sleep(random.uniform(.10, .15))
+            time.sleep(random.uniform(.10, .20))
             pyautogui.mouseUp(pyautogui.position())
             
 
@@ -72,10 +72,10 @@ class mouse_movements():
         #color of teal markers in runelite is [0,253,242]
         #right to left is descending order as coords is 0, 0 at the top left
         #find the teal contours
-        markers = self.screenscrape.find_contours(color)
+        markers = self.screenscrape.find_contours(target_color = color)
         #filter out the minimap contours
-        x_low, x_high, y_low, y_high = self.get_minimap()
-        filtered_markers = [(x,y) for x,y in markers if not (x_low <= x <= x_high and y_low <= y <= y_high)]
+        filtered_markers = [(x,y) for x,y in markers if not (self.width-215 <= x <= self.width 
+                                                             and 0 <= y <= 200)]
         #Sort by x coordinates, else y coordinates
         if x_axis == True:
             filtered_markers = sorted(filtered_markers, key= lambda x: x[0], reverse = right2left)
@@ -140,9 +140,17 @@ class mouse_movements():
         return window_width - 260, window_width, window_top, window_top + 230
     
     def login(self):
-
-        window_top = self.ry
-        window_width = self.width
-
-        #osrs minimap size does not change and is always x-260 and y+ 230 fromt he top right corner
-        return window_width - 260, window_width, window_top, window_top + 230
+        
+        mouse_movements.move_mouse(self, self.rx+self.width+17, self.ry + 38)
+        mouse_movements.perform_click(self)
+        mouse_movements.move_mouse(self, self.rx+ self.width - 63, self.ry + self.height - 30, 4)
+        mouse_movements.perform_click(self)
+        time.sleep(random.uniform(.80, 1.50))
+        mouse_movements.move_mouse(self, self.rx + (self.width/2) + 65, self.ry + 290, 5)
+        mouse_movements.perform_click(self)
+        time.sleep(random.uniform(7.00, 9.00))   
+        mouse_movements.move_mouse(self, self.rx+ (self.width/2) + 65, self.ry + 365, 5) 
+        mouse_movements.perform_click(self)
+    
+    def random_movements(self):
+        pass
