@@ -44,7 +44,6 @@ else:
 
 
 start_time = time.time()
-time.sleep(random.uniform(1, 2))
 
 counter = 0
 while time.time() - start_time < 21600: 
@@ -81,7 +80,7 @@ while time.time() - start_time < 21600:
         mouse_movements.perform_click()
         time.sleep(random.uniform(9.00, 9.50)) 
 
-        x,y = screenscrape.img_detection(food_item, threshold= .65)[0]
+        x,y = screenscrape.img_detection(food_item, threshold= .70)[0]
         mouse_movements.move_mouse(x, y, 2)
         mouse_movements.perform_click()
 

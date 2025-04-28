@@ -46,7 +46,7 @@ class screenscrape:
             print(f"Found target text: {target_text}")
             return True
         else:
-            print(f"Not target text: {text}")
+            print(f"No target text: {text}")
             return False
     
     def check_health(self, target_color = np.array([230, 180, 0]), color_t1 = 25, color_t2 = 25, color_t3 = 5):
@@ -83,7 +83,7 @@ class screenscrape:
         
         return True
         
-    def skill_text(self, activity =''):
+    def skill_text(self, activity = ''):
         green_color = np.array([0, 255, 0])
         screenshot = None
         #Wintertodt bottom left text box
@@ -105,7 +105,6 @@ class screenscrape:
         mask = cv2.inRange(image, green_color, green_color)
 
         if cv2.countNonZero(mask) > 0:
-            print('Action')
             return True
         else:
             print('Idle')
@@ -204,74 +203,84 @@ class screenscrape:
         screenshot = pyautogui.screenshot(region=(self.rx+self.width-97, self.ry+self.height-82, 30, 20))
         return screenshot
 
-    def img_detection(self, input_img, threshold = .70, alpha=0.5, area = None):
+    def img_detection(self, input_img, threshold = .70, alpha = 0.4, inventory = False):
 
         if isinstance(input_img, str):
             input_img = Image.open(input_img)
 
-        width_adj, height_adj = input_img.size[0] // 2, input_img.size[1] // 2
-        if area == 'inventory':
-            pass
+        if inventory == True:
+            #not finshed
+            screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
         else:
             screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
-            #screenshot.show()
 
-        haystack_color = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-        template_color = cv2.cvtColor(np.array(input_img.convert("RGB")), cv2.COLOR_RGB2BGR)
+        try:
+            haystack_color = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+            needle_color = cv2.cvtColor(np.array(input_img.convert("RGB")), cv2.COLOR_RGB2BGR)
 
-        # 2. Prepare edge maps for shape
-        haystack_gray  = cv2.cvtColor(haystack_color, cv2.COLOR_BGR2GRAY)
-        template_gray  = cv2.cvtColor(template_color, cv2.COLOR_BGR2GRAY)
-        haystack_edges = cv2.Canny(haystack_gray, 50, 150)
-        template_edges = cv2.Canny(template_gray, 50, 150)
-        # (optional) thicken edges so small gaps don’t break the contour
-        kernel = np.ones((3,3), np.uint8)
-        haystack_edges = cv2.dilate(haystack_edges, kernel, iterations=1)
-        template_edges = cv2.dilate(template_edges, kernel, iterations=1)
+            # 2. Prepare edge maps for shape
+            haystack_gray  = cv2.cvtColor(haystack_color, cv2.COLOR_BGR2GRAY)
+            needle_gray  = cv2.cvtColor(needle_color, cv2.COLOR_BGR2GRAY)
 
-        # 3. Run two template matches
-        res_color = cv2.matchTemplate(haystack_color, template_color, cv2.TM_CCOEFF_NORMED)
-        res_shape = cv2.matchTemplate(haystack_edges, template_edges, cv2.TM_CCOEFF_NORMED)
+            haystack_edges = cv2.Canny(haystack_gray, 50, 150)
+            needle_edges = cv2.Canny(needle_gray, 50, 150)
+            # (optional) thicken edges so small gaps don’t break the contour
+            kernel = np.ones((3,3), np.uint8)
 
-        # 4. Blend them: alpha * color_score + (1 - alpha) * shape_score
-        result = cv2.addWeighted(res_color, alpha, res_shape, 1 - alpha, 0)
+            haystack_edges = cv2.dilate(haystack_edges, kernel, iterations=1)
+            needle_edges = cv2.dilate(needle_edges, kernel, iterations=1)
 
-        # 5. Threshold and extract centers
-        loc = np.where(result >= threshold)
-        coords = list(zip(*loc[::-1]))
-        width_adj, height_adj = template_color.shape[1] // 2, template_color.shape[0] // 2
-        coords = [(self.rx + x + width_adj, self.ry + y + height_adj) for x,y in coords]
-        grouped = self.group_nearby_coordinates(coords, eps=4)
+            # 3. Run two needle matches
+            res_color = cv2.matchTemplate(haystack_color, needle_color, cv2.TM_CCOEFF_NORMED)
+            res_shape = cv2.matchTemplate(haystack_edges, needle_edges, cv2.TM_CCOEFF_NORMED)
 
-        return grouped or False
+            # 4. Blend them: alpha * color_score + (1 - alpha) * shape_score
+            result = cv2.addWeighted(res_color, alpha, res_shape, 1 - alpha, 0)
 
-        # # Convert RGB screenshot to Grayscale
-        # haystack_img = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
-        # # Convert input image to grayscale
-        # image = input_img.convert("RGB")
-        # needle_img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
-        # try:
-        #     #testing display purposes
-        #     # print(needle_img.dtype, haystack_img.dtype)
-        #     result = cv2.matchTemplate(haystack_img, needle_img, cv2.TM_CCOEFF_NORMED)
-        #     #cv2.imshow('Results', result)
-        #     #cv2.waitKey()
-        #     #threshold % match accepted result
-        #     loc = np.where(result >= threshold)
-        #     # Zip the coordinates into a list of (x, y) tuples
-        #     coordinates = list(zip(*loc[::-1]))
-        #     #add the adjustments to get the centre location
-        #     coordinates = [(self.rx+x+width_adj, self.ry+y+height_adj) for x, y in coordinates]
-        #     #group to prevent duplicate images of the same location
-        #     grouped_coordinates = self.group_nearby_coordinates(coordinates, eps=4)
+            # 5. Threshold and extract centers
+            loc = np.where(result >= threshold)
+            coords = list(zip(*loc[::-1]))
+            width_adj, height_adj = needle_color.shape[1] // 2, needle_color.shape[0] // 2
+            coords = [(self.rx + x + width_adj, self.ry + y + height_adj) for x,y in coords]
+            grouped = self.group_nearby_coordinates(coords, eps=4)
+        except IndexError as e:
+            print('img not found')
+            return False
+        return grouped 
+    
+    def npz_detection(self, npzfile, threshold = .70, alpha=0.5):
+        
+        screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
 
-        #     # Print the coordinates
-        #     # for coord in grouped_coordinates:
-        #     #     print("Match found at:", coord)
+        try:
 
-        # except IndexError as e:
-        #     print('img not found')
-        #     return False
+            haystack_color = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+            # 2. Prepare edge maps for shape
+            haystack_gray  = cv2.cvtColor(haystack_color, cv2.COLOR_BGR2GRAY)
+            haystack_edges = cv2.Canny(haystack_gray, 50, 150)
+            # (optional) thicken edges so small gaps don’t break the contour
+            kernel = np.ones((3,3), np.uint8)
+            haystack_edges = cv2.dilate(haystack_edges, kernel, iterations=1)
+            # load the npz files:
+            data = np.load(npzfile)
+            needle_color = data['needle_color']
+            needle_edges = data['needle_edges']
+            # 3. Run two needle matches
+            res_color = cv2.matchTemplate(haystack_color, needle_color, cv2.TM_CCOEFF_NORMED)
+            res_shape = cv2.matchTemplate(haystack_edges, needle_edges, cv2.TM_CCOEFF_NORMED)
 
-        # return grouped_coordinates
+            # 4. Blend them: alpha * color_score + (1 - alpha) * shape_score
+            result = cv2.addWeighted(res_color, alpha, res_shape, 1 - alpha, 0)
+
+            # 5. Threshold and extract centers
+            loc = np.where(result >= threshold)
+            coords = list(zip(*loc[::-1]))
+            width_adj, height_adj = needle_color.shape[1] // 2, needle_color.shape[0] // 2
+            coords = [(self.rx + x + width_adj, self.ry + y + height_adj) for x,y in coords]
+            grouped = self.group_nearby_coordinates(coords, eps=4)
+        except IndexError as e:
+            print('img not found')
+            return False
+        return grouped
+
 
