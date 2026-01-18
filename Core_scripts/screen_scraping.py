@@ -6,6 +6,7 @@ import pygetwindow as gw
 import time
 import cv2
 from PIL import Image, ImageEnhance, ImageFilter
+import imagehash
 import pygetwindow as gw
 from sklearn.cluster import DBSCAN
 import re
@@ -16,9 +17,11 @@ class screenscrape:
     def __init__(self, window_title): 
         window = gw.getWindowsWithTitle(window_title)[0]
         if not window:
-            print(f"No window found with title '{window_title}'")
-            exit()
-        self.rx, self.ry, self.width, self.height = window.left, window.top, window.width, window.height
+            print(f"No window found with title '{window_title}', Bring window to top Left")
+            self.rx, self.ry, self.width, self.height = 0, 0, 1920, 1080
+            
+        else:
+            self.rx, self.ry, self.width, self.height = window.left, window.top, window.width, window.height
     
     def read_text(self, target_text):
 
@@ -282,5 +285,50 @@ class screenscrape:
             print('img not found')
             return False
         return grouped
+    
+    def hash_detection(self, target_hash_str, target_w, target_h, threshold=5, step=2):
+        """
+        Scans the client area for a matching perceptual hash.
+        
+        :param target_hash_str: The hex string of the target (e.g., "a1b2c3...")
+        :param target_w, target_h: Width/Height of the original item you hashed (e.g., 30, 30)
+        :param threshold: Hamming distance tolerance (0-5 is strict, 10+ is loose)
+        :param step: Pixels to skip. Higher = Faster but might miss small items.
+        """
+        # 1. Capture the current client state
+        # (Using the coordinates from your existing class setup)
+        screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
+        
+        # 2. Convert the input string back to a Hash object
+        needle_hash = imagehash.hex_to_hash(target_hash_str)
+        
+        found_coords = []
+        
+        # 3. Sliding Window Search
+        # We loop through the screenshot, cropping out little squares and hashing them
+        # Note: 'step' is critical here. step=1 checks every pixel (SLOW). step=5 checks every 5th.
+        for y in range(0, self.height - target_h, step):
+            for x in range(0, self.width - target_w, step):
+                
+                # Crop the "candidate" from the screenshot
+                # crop box is (left, top, right, bottom)
+                crop = screenshot.crop((x, y, x + target_w, y + target_h))
+                
+                # Compute hash for this spot
+                haystack_hash = imagehash.average_hash(crop)
+                
+                # Calculate difference (Hamming Distance)
+                if (needle_hash - haystack_hash) <= threshold:
+                    # If match, save the center coordinates (adjusted to screen position)
+                    center_x = self.rx + x + (target_w // 2)
+                    center_y = self.ry + y + (target_h // 2)
+                    found_coords.append((center_x, center_y))
+
+        # 4. Filter duplicates
+        if not found_coords:
+            return False
+            
+        # Reuse your existing grouper function
+        return self.group_nearby_coordinates(found_coords, eps=target_w // 2)
 
 

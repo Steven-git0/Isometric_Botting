@@ -14,10 +14,11 @@ rx, ry, width, height = window.left, window.top, window.width, window.height
 mouse_movements = mouse_movements(window_title)
 screenscrape = screenscrape(window_title)
 
-
-x,y = screenscrape.npz_detection('image_identification/deposit_inv.npz')[-1]
-mouse_movements.move_mouse(x, y, 2)
 mouse_movements.perform_click()
+
+# x,y = screenscrape.npz_detection('image_identification/deposit_inv.npz')[-1]
+# mouse_movements.move_mouse(x, y, 2)
+# mouse_movements.perform_click()
 
 # if screenscrape.mouse_text() == 'calcified':
 #     mouse_movements.perform_click()

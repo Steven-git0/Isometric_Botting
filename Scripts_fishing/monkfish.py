@@ -18,20 +18,32 @@ start_time = time.time()
 while time.time() - start_time < 21600: 
 
     while screenscrape.read_text("here") == False:
-        x,y = screenscrape.npz_detection('image_identification/raw_monkfish.npz', threshold= .50)[-1]
-        mouse_movements.move_mouse(x, y, 2)
-        mouse_movements.perform_click()
-        time.sleep(random.uniform(20.00, 25.00))
+        try:
+            x,y = screenscrape.npz_detection('image_identification/raw_monkfish.npz', threshold= .65)[-1]
+            mouse_movements.move_mouse(x, y, 2)
+            mouse_movements.perform_click()
+            time.sleep(random.uniform(20.00, 25.00))
+        except Exception as e:
+            mouse_movements.move_mouse(.95318, .5353, 2)
+            mouse_movements.perform_click()
+            time.sleep(random.uniform(8.00, 9.00))
 
         while screenscrape.skill_text() == True and screenscrape.read_text("here") == False:
             time.sleep(random.uniform(13.00, 17.00))
-    
-    x,y = mouse_movements.relative_move()
-    mouse_movements.move_mouse(x, y, 2)
-    mouse_movements.perform_click()
-    time.sleep(random.uniform(7.00, 8.00))
+    #while True, but will run infinitely if start time condition 
+    while True:
+        try:
+            x,y = mouse_movements.relative_move()
+            mouse_movements.move_mouse(x, y, 2)
+            mouse_movements.perform_click()
+            time.sleep(random.uniform(7.00, 8.00))
+            break
+        except Exception as e:
+            mouse_movements.move_mouse(.95318, .5353, 2)
+            mouse_movements.perform_click()
+            time.sleep(random.uniform(8.00, 9.00))
 
-    mouse_movements.move_mouse(.25485, .7882, 4)
+    mouse_movements.move_mouse(.25500, .7882, 4)
     mouse_movements.perform_click()
     time.sleep(random.uniform(5.00, 6.00))
 

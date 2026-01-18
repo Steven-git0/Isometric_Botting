@@ -97,8 +97,7 @@ while True:
         time.sleep(random.uniform(4.35, 4.75))
 
         #click bank icon
-        deposit_inv = screenscrape.img_detection(input_img="osrs_images\deposit.png", threshold= .60)
-        x, y = deposit_inv[0]
+        x, y = screenscrape.npz_detection('image_identification/deposit_inv.npz')[0]
         mouse_movements.move_mouse(x, y, 3)
         mouse_movements.perform_click()
         time.sleep(random.uniform(.50, 1.00))
