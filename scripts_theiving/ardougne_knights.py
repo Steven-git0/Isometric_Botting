@@ -57,10 +57,10 @@ while time.time() - start_time < 21600:
         while check_distance() <= 20 and counter < coin_limit and screenscrape.check_health() == False:
             mouse_movements.perform_click()
             if first_time == True:
-                time.sleep(random.uniform(1.4, 1.6))
+                time.sleep(random.uniform(1.4, 1.60))
                 first_time = False
             else:
-                time.sleep(random.uniform(.30, .60))
+                time.sleep(random.uniform(.30, .70))
 
             counter += 1
 

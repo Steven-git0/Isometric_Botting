@@ -206,7 +206,7 @@ class screenscrape:
         screenshot = pyautogui.screenshot(region=(self.rx+self.width-97, self.ry+self.height-82, 30, 20))
         return screenshot
 
-    def img_detection(self, input_img, threshold = .70, alpha = 0.4, inventory = False):
+    def img_detection(self, input_img, threshold = .75, alpha = 0.4, inventory = False):
 
         if isinstance(input_img, str):
             input_img = Image.open(input_img)
@@ -251,52 +251,12 @@ class screenscrape:
             return False
         return grouped 
     
-    def npz_detection(self, npzfile, threshold = .70, alpha=0.5):
-        
-        screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
-
-        try:
-
-            haystack_color = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-            # 2. Prepare edge maps for shape
-            haystack_gray  = cv2.cvtColor(haystack_color, cv2.COLOR_BGR2GRAY)
-            haystack_edges = cv2.Canny(haystack_gray, 50, 150)
-            # (optional) thicken edges so small gaps don’t break the contour
-            kernel = np.ones((3,3), np.uint8)
-            haystack_edges = cv2.dilate(haystack_edges, kernel, iterations=1)
-            # load the npz files:
-            data = np.load(npzfile)
-            needle_color = data['needle_color']
-            needle_edges = data['needle_edges']
-            # 3. Run two needle matches
-            res_color = cv2.matchTemplate(haystack_color, needle_color, cv2.TM_CCOEFF_NORMED)
-            res_shape = cv2.matchTemplate(haystack_edges, needle_edges, cv2.TM_CCOEFF_NORMED)
-
-            # 4. Blend them: alpha * color_score + (1 - alpha) * shape_score
-            result = cv2.addWeighted(res_color, alpha, res_shape, 1 - alpha, 0)
-
-            # 5. Threshold and extract centers
-            loc = np.where(result >= threshold)
-            coords = list(zip(*loc[::-1]))
-            width_adj, height_adj = needle_color.shape[1] // 2, needle_color.shape[0] // 2
-            coords = [(self.rx + x + width_adj, self.ry + y + height_adj) for x,y in coords]
-            grouped = self.group_nearby_coordinates(coords, eps=4)
-        except IndexError as e:
-            print('img not found')
-            return False
-        return grouped
     
     def hash_detection(self, target_hash_str, target_w, target_h, threshold=5, step=2):
         """
         Scans the client area for a matching perceptual hash.
-        
-        :param target_hash_str: The hex string of the target (e.g., "a1b2c3...")
-        :param target_w, target_h: Width/Height of the original item you hashed (e.g., 30, 30)
-        :param threshold: Hamming distance tolerance (0-5 is strict, 10+ is loose)
-        :param step: Pixels to skip. Higher = Faster but might miss small items.
         """
         # 1. Capture the current client state
-        # (Using the coordinates from your existing class setup)
         screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
         
         # 2. Convert the input string back to a Hash object
@@ -305,30 +265,34 @@ class screenscrape:
         found_coords = []
         
         # 3. Sliding Window Search
-        # We loop through the screenshot, cropping out little squares and hashing them
-        # Note: 'step' is critical here. step=1 checks every pixel (SLOW). step=5 checks every 5th.
         for y in range(0, self.height - target_h, step):
             for x in range(0, self.width - target_w, step):
                 
-                # Crop the "candidate" from the screenshot
-                # crop box is (left, top, right, bottom)
                 crop = screenshot.crop((x, y, x + target_w, y + target_h))
-                
-                # Compute hash for this spot
                 haystack_hash = imagehash.average_hash(crop)
                 
-                # Calculate difference (Hamming Distance)
                 if (needle_hash - haystack_hash) <= threshold:
-                    # If match, save the center coordinates (adjusted to screen position)
                     center_x = self.rx + x + (target_w // 2)
                     center_y = self.ry + y + (target_h // 2)
                     found_coords.append((center_x, center_y))
 
-        # 4. Filter duplicates
-        if not found_coords:
-            return False
-            
-        # Reuse your existing grouper function
-        return self.group_nearby_coordinates(found_coords, eps=target_w // 2)
+        # 4. Filter duplicates (Get the list of grouped matches)
+        matches = self.group_nearby_coordinates(found_coords, eps=target_w // 2)
+        
+        # === FIXES FOR UNPACKING ===
+        
+        # If no matches found, return None, None
+        # This prevents "TypeError: cannot unpack non-iterable bool object"
+        if not matches:
+            return None, None
+
+        # Take the FIRST match from the list (since you are assigning to single x, y)
+        first_match = matches[0]
+        
+        # Unwrap and cast numpy types to standard python integers
+        final_x = int(first_match[0])
+        final_y = int(first_match[1])
+
+        return final_x, final_y
 
 
