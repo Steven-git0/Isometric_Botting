@@ -62,6 +62,7 @@ while counter < 280:
     mouse_movements.move_mouse(raw_x, raw_y, 4)
     mouse_movements.perform_click()
     time.sleep(random.uniform(.3, 1.1))
+    
     #leave bank
     pyautogui.press('esc')
     counter += 1

@@ -1,6 +1,4 @@
 import pytesseract
-pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
-import pyautogui
 import numpy as np
 import pygetwindow as gw
 import time
@@ -10,7 +8,16 @@ import imagehash
 import pygetwindow as gw
 from sklearn.cluster import DBSCAN
 import re
+import sys
+import os
+import platform
 
+if platform.system() == "Windows":
+    # If the user is running the .exe, we need to handle paths differently
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+else:
+    # On Mac/Linux, Tesseract is usually in the global PATH
+    pass
 
 class screenscrape:
 
