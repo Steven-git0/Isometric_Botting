@@ -61,7 +61,7 @@ class screenscrape:
     
     def check_health(self, target_color = np.array([230, 180, 0]), color_t1 = 25, color_t2 = 25, color_t3 = 5):
 
-        screenshot = pyautogui.screenshot(region=(self.rx + self.width - 250, self.ry + 80, 30, 30))
+        screenshot = pyautogui.screenshot(region=(self.rx + self.width - 217, self.ry + 50, 30, 30))
         image = np.array(screenshot) 
         #set the upper and lower bounds for the color, sometimes the color may be a few units off within the contour
         lower_bound = np.array([target_color[0] - color_t1, target_color[1] - color_t2, target_color[2] - color_t3])

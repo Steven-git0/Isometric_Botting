@@ -1,4 +1,6 @@
-#Copper Mining Varrock Eastside, orientation North, 1400x 1000, zoom out max, then zoom in 3 mousewheels
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pyautogui 
 import time
 import numpy as np
@@ -19,7 +21,8 @@ class mouse_movements():
         self.ry = window.top
         self.width = window.width
         self.height = window.height
-    
+        self.screenscrape = screenscrape(window_title)
+
     def perform_click(self, m = 'l'):
         if m == 'r':
             print('clicking')

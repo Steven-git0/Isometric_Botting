@@ -1,21 +1,16 @@
-from core_scripts.screen_scraping import *
-from core_scripts.movements import *
-import pygetwindow as gw
+import pywinctl as gw
 import time
+import pyautogui
 
 window_title = "RuneLite - litlGenocide"
+windows = gw.getWindowsWithTitle(window_title)
+window = windows[0]
+rx = window.left
+ry = window.top
+width = window.width
 
-window = gw.getWindowsWithTitle(window_title)[0]
-if not window:
-    print(f"No window found with title '{window_title}'")
-    exit()
-rx, ry, width, height = window.left, window.top, window.width, window.height
-
-mouse_movements = mouse_movements(window_title)
-screenscrape = screenscrape(window_title)
-
-mouse_movements.perform_click()
-
+screenshot = pyautogui.screenshot(region=(rx + width - 217, ry + 50, 30, 30))
+screenshot.save('images/test_screenshot.png')
 # x,y = screenscrape.npz_detection('image_identification/deposit_inv.npz')[-1]
 # mouse_movements.move_mouse(x, y, 2)
 # mouse_movements.perform_click()

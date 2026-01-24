@@ -38,6 +38,7 @@ while counter < 280:
 
     #random break
     if random.uniform(1.00, 10.00) > 9.2:
+        print("taking a break")
         time.sleep(random.uniform(60, 600))
 
     #go back to bank chest

@@ -1,6 +1,9 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from core_scripts.screen_scraping import *
 from core_scripts.movements import *
-import pygetwindow as gw
+import pywinctl as gw
 import time
 import tkinter as tk
 from tkinter import simpledialog
@@ -10,12 +13,13 @@ from tkinter import simpledialog
 
 window_title = "RuneLite - litlGenocide"
 
-window = gw.getWindowsWithTitle(window_title)[0]
-if not window:
-    print(f"No window found with title '{window_title}'")
-    exit()
-rx, ry, width, height = window.left, window.top, window.width, window.height
-
+windows = gw.getWindowsWithTitle(window_title)
+window = windows[0]
+rx = window.left
+ry = window.top
+width = window.width
+height = window.height
+    
 mouse_movements = mouse_movements(window_title)
 screenscrape = screenscrape(window_title)
 
@@ -60,7 +64,7 @@ while time.time() - start_time < 21600:
                 time.sleep(random.uniform(1.4, 1.60))
                 first_time = False
             else:
-                time.sleep(random.uniform(.30, .70))
+                time.sleep(random.uniform(.20, .65))
 
             counter += 1
 
@@ -94,4 +98,5 @@ while time.time() - start_time < 21600:
             mouse_movements.perform_click()
             time.sleep(random.uniform(1.20, 1.50))
     small_break()
+    coin_limit += random.randint(-2, 2)
 
