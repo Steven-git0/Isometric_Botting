@@ -1,5 +1,5 @@
-from screen_scraping import *
-from movements import *
+from scripts__core.screen_scraping import *
+from scripts__core.movements import *
 from PIL import Image
 import time
 import pyautogui 

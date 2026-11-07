@@ -1,4 +1,4 @@
-from core_scripts.screen_scraping import *
+from scripts__core.screen_scraping import *
 from movements import *
 import time
 #from max zoom out

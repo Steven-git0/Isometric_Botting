@@ -1,5 +1,5 @@
-from core_scripts.screen_scraping import *
-from core_scripts.movements import *
+from scripts__core.screen_scraping import *
+from scripts__core.movements import *
 import pygetwindow as gw
 import time
 import tkinter as tk

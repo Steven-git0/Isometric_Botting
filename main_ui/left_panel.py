@@ -52,13 +52,13 @@ class LeftPanel(CTkFrame):
             {
                 "id": "Category 1",
                 "label": "Mining",
-                "icon_path": mining_icon_path or r"core_scripts\Main_UI\panel_img\pickaxe.png",
+                "icon_path": mining_icon_path or r"main_ui\panel_img\pickaxe.png",
                 "enabled": True,
             },
             {
                 "id": "Category 2",
                 "label": "Thieving",
-                "icon_path": thieving_icon_path or r"core_scripts\Main_UI\panel_img\theivingmask.png",
+                "icon_path": thieving_icon_path or r"main_ui\panel_img\theivingmask.png",
                 "enabled": True,
             },
         ]

@@ -5,7 +5,7 @@ import pyautogui
 import time
 import numpy as np
 import random
-from core_scripts.screen_scraping import *
+from scripts__core.screen_scraping import *
 from humancursor import SystemCursor
 import pywinctl as gw
 cursor = SystemCursor()

@@ -3,8 +3,8 @@ import os
 
 # Add the parent directory (Isometric_Botting) to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from core_scripts.screen_scraping import *
-from core_scripts.movements import *                                                                                                                                                    
+from scripts__core.screen_scraping import *
+from scripts__core.movements import *                                                                                                                                                    
 import time
 import random
 from PIL import Image

@@ -49,10 +49,10 @@ app.title("Sandscripts for OSRS")
 # 3) Assets / Images
 # =========================
 # Note: using raw strings to avoid backslash-escape issues on Windows.
-side_img_data = Image.open(r"core_scripts\Main_UI\side-img.png")
-email_icon_data = Image.open(r"core_scripts\Main_UI\email-icon.png")
-password_icon_data = Image.open(r"core_scripts\Main_UI\password-icon.png")
-google_icon_data = Image.open(r"core_scripts\Main_UI\google-icon.png")
+side_img_data = Image.open(r"main_ui\side-img.png")
+email_icon_data = Image.open(r"main_ui\email-icon.png")
+password_icon_data = Image.open(r"main_ui\password-icon.png")
+google_icon_data = Image.open(r"main_ui\google-icon.png")
 
 side_img = CTkImage(dark_image=side_img_data, light_image=side_img_data, size=(400, 600))
 email_icon = CTkImage(dark_image=email_icon_data, light_image=email_icon_data, size=(20, 20))
@@ -196,8 +196,8 @@ def on_login():
     left_panel_widget = LeftPanel(
         master=main_container,
         on_category_selected=load_scripts,
-        mining_icon_path=r"core_scripts\Main_UI\panel_img\pickaxe.png",
-        thieving_icon_path=r"core_scripts\Main_UI\panel_img\theivingmask.png",
+        mining_icon_path=r"main_ui\panel_img\pickaxe.png",
+        thieving_icon_path=r"main_ui\panel_img\theivingmask.png",
         icon_size=(56, 56),   # tweak as you like
         columns=3             # future-proof grid; only 2 items now
     )
