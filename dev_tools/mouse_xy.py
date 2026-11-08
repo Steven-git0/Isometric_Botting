@@ -7,7 +7,7 @@ import pywinctl as gw
 import math
 
 def update_mouse_position():
-    window_title = 'RuneLite'
+    window_title = 'RuneLite - litlGenocide'
     windows = gw.getWindowsWithTitle(window_title)
     x, y = pyautogui.position()
 

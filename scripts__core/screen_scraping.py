@@ -147,18 +147,32 @@ class screenscrape:
             print('not found mouse text')
             return False
     
-    def find_contours(self, target_color = [50,0,73], color_t1 = 5, color_t2 = 5, color_t3 = 5, area_tolerance = 20):
+    def find_contours(self, target_color = 'FF00FFFF', color_t1 = 5, color_t2 = 5, color_t3 = 5):
+
+        if isinstance(target_color, str):
+            hex_color = target_color.strip().lstrip('#')
+            if hex_color.lower().startswith('0x'):
+                hex_color = hex_color[2:]
+            if len(hex_color) == 3:
+                hex_color = ''.join(c * 2 for c in hex_color)
+            elif len(hex_color) == 8:
+                hex_color = hex_color[-6:]
+            target_color = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
+        elif isinstance(target_color, int):
+            target_color = [(target_color >> 16) & 0xFF, (target_color >> 8) & 0xFF, target_color & 0xFF]
 
         #in osrs client this is the location to get the screen shot.
         screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
         # Convert the screenshot to a NumPy array, then convert to hsv for better contour detection
         image = np.array(screenshot) 
         #set the upper and lower bounds for the color, sometimes the color may be a few units off within the contour
-        lower_bound = np.array([target_color[0] - color_t1, target_color[1] - color_t2, target_color[2] - color_t3])
-        upper_bound = np.array([target_color[0] + color_t1, target_color[1] + color_t2, target_color[2] + color_t3])
+        lower_bound = np.clip([target_color[0] - color_t1, target_color[1] - color_t2, target_color[2] - color_t3], 0, 255)
+        upper_bound = np.clip([target_color[0] + color_t1, target_color[1] + color_t2, target_color[2] + color_t3], 0, 255)
 
         # Create a 'mask', matched color are black the rest in white, for a B&W image of only where the outlines are.
         mask = cv2.inRange(image, lower_bound, upper_bound) 
+        kernel = np.ones((2, 2), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
         
         # dilated = cv2.dilate(mask, kernel=np.ones((2,2), np.uint8), iterations=1)
         # cv2.imshow('Dilated Image', dilated)
@@ -172,8 +186,23 @@ class screenscrape:
         if contours:
             # Get the coordinates of the center of the contours
             for c in contours:
-                cx = int(c[:, 0, 0].mean())
-                cy = int(c[:, 0, 1].mean())
+                hull = cv2.convexHull(c)
+                if cv2.contourArea(hull) < 9:
+                    continue
+
+                M = cv2.moments(hull)
+                if M["m00"] != 0:
+                    cx = int(M["m10"] / M["m00"])
+                    cy = int(M["m01"] / M["m00"])
+                else:
+                    bx, by, bw, bh = cv2.boundingRect(hull)
+                    cx = bx + bw // 2
+                    cy = by + bh // 2
+
+                center_gap = mask[cy-1:cy+2, cx-1:cx+2]
+                if center_gap.shape != (3, 3) or np.any(center_gap != 0):
+                    continue
+
                 print("Found color at coordinates:", cx, cy)
             
                 squares.append((self.rx+cx,self.ry+cy))

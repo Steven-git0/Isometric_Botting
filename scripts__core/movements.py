@@ -10,6 +10,9 @@ import pywinctl as gw
 
 from windmouse.core import Coordinate
 from windmouse.pyautogui_controller import PyautoguiMouseController
+pyautogui.PAUSE = 0
+pyautogui.MINIMUM_DURATION = 0
+pyautogui.MINIMUM_SLEEP = 0
 cursor = PyautoguiMouseController()
 
 #Time to mine, adjust depending on your pickaxe and mining level (lower if better pick axe)
@@ -25,13 +28,13 @@ class mouse_movements():
         self.height = window.height
         self.screenscrape = screenscrape(window_title)
 
-    def random_normal(lower_bound, upper_bound):
+    def random_normal(self, lower_bound, upper_bound):
 
         mu = (lower_bound + upper_bound)/2
         std = (upper_bound - lower_bound)/6
 
         while True:
-            num = random.random.gauss(mu, std)
+            num = random.gauss(mu, std)
             if lower_bound <= num <= upper_bound:
                 return num
 
@@ -39,39 +42,39 @@ class mouse_movements():
         if m == 'r':
             print('clicking')
             pyautogui.mouseDown(pyautogui.position(), button='right')
-            time.sleep(random_normal(.04, .12))
+            time.sleep(self.random_normal(.04, .12))
             pyautogui.mouseUp(pyautogui.position(), button='right')
-            time.sleep(random_normal(.02, .04))
+            time.sleep(self.random_normal(.02, .04))
         else:
             print('clicking')
             pyautogui.mouseDown(pyautogui.position())
-            time.sleep(random_normal(.04, .12))
+            time.sleep(self.random_normal(.04, .12))
             pyautogui.mouseUp(pyautogui.position())
-            time.sleep(random_normal(.02, .04))
+            time.sleep(self.random_normal(.02, .04))
             
 
     def move_mouse(self, end_x, end_y, variance = 2, max_step = None):
         
         if max_step is None:
-            max_step = random_normal(10, 20)
+            max_step = self.random_normal(10, 20)
         #All coordinates is based of ratios on a 4:3 aspect ratio on Linux Runelite
         if end_x <= 1 and end_y <= 1:
-            end_x = self.rx + (self.width*end_x) + random_normal(-variance, variance)
-            end_y = self.ry + (self.height*end_y) + random_normal(-variance, variance)
+            end_x = self.rx + (self.width*end_x) + self.random_normal(-variance, variance)
+            end_y = self.ry + (self.height*end_y) + self.random_normal(-variance, variance)
         #legacy manual coordinates compatibility
         else:
-            end_x += random_normal(-variance, variance) 
-            end_y += random_normal(-variance, variance)
+            end_x += self.random_normal(-variance, variance) 
+            end_y += self.random_normal(-variance, variance)
 
         mouse = PyautoguiMouseController(
             #lower 5-7, higher 12-15(better), default 9
-            gravity_magnitude = random_normal(7,11),
+            gravity_magnitude = self.random_normal(7,11),
             #lower 1-2(better), higher 5-10, default 3
-            wind_magnitude = random_normal(2, 5),
+            wind_magnitude = self.random_normal(2, 5),
             #lower 5-10, higher 20-30(better), default 15
             max_step = max_step,
             #lower 5-10(better), higher 20-30, default 12
-            damped_distance = random_normal(6,15)
+            damped_distance = self.random_normal(6,15)
         )
 
         attempts = 0
@@ -79,7 +82,7 @@ class mouse_movements():
             try:
                 print('move to ', end_x, end_y)
                 mouse.dest_position = (Coordinate(round(end_x)), Coordinate(round(end_y)))
-                mouse.move_to_target(tick_delay=0.005, step_duration=0.1)
+                mouse.move_to_target(tick_delay=0.005, step_duration=0)
                 break
             except Exception as e:
                 print(f"An error occurred: {e}")

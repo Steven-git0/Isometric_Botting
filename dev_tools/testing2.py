@@ -1,17 +1,13 @@
-from windmouse.core import Coordinate
-from windmouse.pyautogui_controller import PyautoguiMouseController
 import pyautogui
 import pywinctl as gw
 import time
 import random
-cursor = PyautoguiMouseController()
+from scripts__core.screen_scraping import *
+from scripts__core.movements import *
 
-for x, y in [(300, 300), (400, 300), (500, 300)]:
-    cursor.start_position = (None, None)
-    cursor.dest_position = (Coordinate(x), Coordinate(y))
-    cursor.move_to_target(step_duration=0.01)
+window_title = "RuneLite - litlGenocide"
+mouse_movements= mouse_movements(window_title)
+screenscrape = screenscrape(window_title)
 
+mouse_movements.move_mouse(300,300)
 
-pyautogui.mouseDown(pyautogui.position(), button='right')
-time.sleep(random.uniform(.10, .20))
-pyautogui.mouseUp(pyautogui.position(), button='right')
