@@ -1,5 +1,4 @@
-#install client resizer the settings are for 1400x1000
-#pip install pyautogui
+
 import pyautogui 
 import time
 import tkinter as tk

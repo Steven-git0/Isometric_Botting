@@ -146,20 +146,24 @@ class screenscrape:
         else:
             print('not found mouse text')
             return False
-    
+    #will return an error if target color is not found, will return nothing if found but not in a contour
     def find_contours(self, target_color = 'FF00FFFF', color_t1 = 5, color_t2 = 5, color_t3 = 5):
 
         if isinstance(target_color, str):
             hex_color = target_color.strip().lstrip('#')
             if hex_color.lower().startswith('0x'):
                 hex_color = hex_color[2:]
-            if len(hex_color) == 3:
-                hex_color = ''.join(c * 2 for c in hex_color)
-            elif len(hex_color) == 8:
-                hex_color = hex_color[-6:]
-            target_color = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
-        elif isinstance(target_color, int):
-            target_color = [(target_color >> 16) & 0xFF, (target_color >> 8) & 0xFF, target_color & 0xFF]
+            if len(hex_color) == 8:
+                # First 2 characters are opacity/solid (AARRGGBB), remaining 6 are RRGGBB
+                hex_color = hex_color[2:]
+            if len(hex_color) == 6:
+                target_color = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
+            else:
+                raise ValueError(f"Hex color must be 6 or 8 characters, got: {target_color}")
+        elif isinstance(target_color, (list, tuple, np.ndarray)) and len(target_color) == 3:
+            target_color = [int(c) for c in target_color]
+        else:
+            raise ValueError(f"target_color must be an 8-char hex, 6-char hex, or 3-number color array, got: {target_color}")
 
         #in osrs client this is the location to get the screen shot.
         screenshot = pyautogui.screenshot(region=(self.rx, self.ry, self.width, self.height))
