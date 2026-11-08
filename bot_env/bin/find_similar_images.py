@@ -1,4 +1,4 @@
-#!/home/steven/Documents/Isometric_Botting/bot_env/bin/python3
+#!/home/steven/.gemini/antigravity/scratch/Isometric_Botting/bot_env/bin/python3
 from __future__ import absolute_import, division, print_function
 
 from PIL import Image

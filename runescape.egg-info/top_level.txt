@@ -1,9 +1,0 @@
-scripts__core
-scripts_agi
-scripts_combat
-scripts_cooking
-scripts_fishing
-scripts_mining
-scripts_runecrafting
-scripts_theiving
-scripts_woodcutting

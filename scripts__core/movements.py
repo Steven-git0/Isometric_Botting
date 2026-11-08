@@ -6,9 +6,11 @@ import time
 import numpy as np
 import random
 from scripts__core.screen_scraping import *
-from humancursor import SystemCursor
 import pywinctl as gw
-cursor = SystemCursor()
+
+from windmouse.core import Coordinate
+from windmouse.pyautogui_controller import PyautoguiMouseController
+cursor = PyautoguiMouseController()
 
 #Time to mine, adjust depending on your pickaxe and mining level (lower if better pick axe)
 
@@ -23,43 +25,69 @@ class mouse_movements():
         self.height = window.height
         self.screenscrape = screenscrape(window_title)
 
+    def random_normal(lower_bound, upper_bound):
+
+        mu = (lower_bound + upper_bound)/2
+        std = (upper_bound - lower_bound)/6
+
+        while True:
+            num = random.random.gauss(mu, std)
+            if lower_bound <= num <= upper_bound:
+                return num
+
     def perform_click(self, m = 'l'):
         if m == 'r':
             print('clicking')
             pyautogui.mouseDown(pyautogui.position(), button='right')
-            time.sleep(random.uniform(.10, .20))
+            time.sleep(random_normal(.04, .12))
             pyautogui.mouseUp(pyautogui.position(), button='right')
+            time.sleep(random_normal(.02, .04))
         else:
             print('clicking')
             pyautogui.mouseDown(pyautogui.position())
-            time.sleep(random.uniform(.10, .20))
+            time.sleep(random_normal(.04, .12))
             pyautogui.mouseUp(pyautogui.position())
+            time.sleep(random_normal(.02, .04))
             
 
-    def move_mouse(self, end_x, end_y, variance = 2):
+    def move_mouse(self, end_x, end_y, variance = 2, max_step = None):
         
+        if max_step is None:
+            max_step = random_normal(10, 20)
+        #All coordinates is based of ratios on a 4:3 aspect ratio on Linux Runelite
         if end_x <= 1 and end_y <= 1:
-            end_x = self.rx + (self.width*end_x) + random.uniform(-variance, variance)
-            end_y = self.ry + (self.height*end_y) + random.uniform(-variance, variance)
+            end_x = self.rx + (self.width*end_x) + random_normal(-variance, variance)
+            end_y = self.ry + (self.height*end_y) + random_normal(-variance, variance)
+        #legacy manual coordinates compatibility
         else:
-            end_x += random.uniform(-variance, variance) 
-            end_y += random.uniform(-variance, variance)
+            end_x += random_normal(-variance, variance) 
+            end_y += random_normal(-variance, variance)
+
+        mouse = PyautoguiMouseController(
+            #lower 5-7, higher 12-15(better), default 9
+            gravity_magnitude = random_normal(7,11),
+            #lower 1-2(better), higher 5-10, default 3
+            wind_magnitude = random_normal(2, 5),
+            #lower 5-10, higher 20-30(better), default 15
+            max_step = max_step,
+            #lower 5-10(better), higher 20-30, default 12
+            damped_distance = random_normal(6,15)
+        )
+
         attempts = 0
         while attempts < 5:
             try:
                 print('move to ', end_x, end_y)
-                cursor.move_to([end_x, end_y], duration = 0.01)
+                mouse.dest_position = (Coordinate(round(end_x)), Coordinate(round(end_y)))
+                mouse.move_to_target(tick_delay=0.005, step_duration=0.1)
                 break
             except Exception as e:
                 print(f"An error occurred: {e}")
-                print("1 attempt failed, rounding to whole")
                 end_x = round(end_x)
                 end_y = round(end_y)
 
         if attempts == 5:
-             print("Max retries reached, operation failed.")
-
-        #cursor.click_on([end_x, end_y])
+             print("Max retries reached, mouse move failed.")
 
     def click_image(self, img_name, element = 0, threshold = .90):
         image = Image.open(img_name)

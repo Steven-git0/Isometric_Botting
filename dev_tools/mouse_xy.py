@@ -3,27 +3,26 @@
 import pyautogui 
 import time
 import tkinter as tk
-import pygetwindow as gw
+import pywinctl as gw
 import math
 
 def update_mouse_position():
-    window_title = 'RuneLite - litlGenocide'
-    window = gw.getWindowsWithTitle(window_title)[0]
-
-    if not window:
-        print(f"No window found with title '{window_title}'")
-        exit()
-
-    rx, ry, width, height = window.left, window.top, window.width, window.height
+    window_title = 'RuneLite'
+    windows = gw.getWindowsWithTitle(window_title)
     x, y = pyautogui.position()
-    
-    position_label.config(text=f"Mouse X: {(x-rx)}, Mouse Y: {(y-ry)}")
+
+    if windows:
+        window = windows[0]
+        rx, ry, width, height = window.left, window.top, window.width, window.height
+        position_label.config(text=f"Mouse X: {(x-rx)}, Mouse Y: {(y-ry)}")
+        size_label.config(text=f"Window Length: {width}, Window Height: {height}")
+        ratio_label.config(text=f"Ratio X: {round((x-rx)/width, 5)}, Ratio Y: {round((y-ry)/height, 5)}")
+    else:
+        position_label.config(text=f"Mouse X: N/A, Mouse Y: N/A (No '{window_title}' window)")
+        size_label.config(text="Window Length: N/A, Window Height: N/A")
+        ratio_label.config(text="Ratio X: N/A, Ratio Y: N/A")
 
     abs_label.config(text=f"Mouse X: {(x)}, Mouse Y: {(y)}")
-
-    size_label.config(text=f"Window Length: {width}, Window Height: {height}")
-
-    ratio_label.config(text=f"Ratio X: {round((x-rx)/width, 5)}, Ratio Y: {round((y-ry)/height, 5)}")
 
     color = pyautogui.pixel(x,y)
     color_label.config(text = f"Color: {color}")

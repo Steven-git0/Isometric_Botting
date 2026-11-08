@@ -1,6 +1,6 @@
 from scripts__core.screen_scraping import *
 from scripts__core.movements import *
-import pygetwindow as gw
+import pywinctl as gw
 import time
 import random
 
